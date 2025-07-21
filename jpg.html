@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>تحويل أي صورة إلى JPG</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: #f9f9f9;
+    }
+    input, button {
+      margin-top: 15px;
+      padding: 10px;
+    }
+    canvas {
+      display: none;
+      margin-top: 20px;
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h2>تحويل أي صورة إلى JPG</h2>
+  <input type="file" accept="image/*" id="upload"><br>
+  <button onclick="downloadJPG()">تحميل الصورة كـ JPG</button><br>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const upload = document.getElementById('upload');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let jpgDataURL = '';
+    let originalFileName = 'converted';
+
+    upload.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file || !file.type.startsWith('image/')) {
+        alert("يرجى اختيار صورة صحيحة");
+        return;
+      }
+
+      originalFileName = file.name.replace(/\.[^/.]+$/, "");
+
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        canvas.style.display = 'block';
+        jpgDataURL = canvas.toDataURL('image/jpeg', 0.92); // جودة 92%
+      };
+      img.onerror = () => alert("حدث خطأ أثناء تحميل الصورة");
+      img.src = URL.createObjectURL(file);
+    });
+
+    function downloadJPG() {
+      if (!jpgDataURL) return alert("يرجى رفع صورة أولاً");
+      const link = document.createElement('a');
+      link.href = jpgDataURL;
+      link.download = originalFileName + '.jpg';
+      link.click();
+    }
+  </script>
+</body>
+</html>
