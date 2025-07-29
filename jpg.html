@@ -10,33 +10,86 @@
       padding: 40px;
       background: #f9f9f9;
     }
-    input, button {
+    #drop-area {
+      border: 2px dashed #999;
+      border-radius: 10px;
+      padding: 30px;
+      width: 300px;
+      margin: 20px auto;
+      background-color: #fff;
+      transition: background-color 0.3s;
+      cursor: pointer;
+    }
+    #drop-area.hover {
+      background-color: #eee;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    button {
+      padding: 10px 20px;
       margin-top: 15px;
-      padding: 10px;
     }
     canvas {
       display: none;
-      margin-top: 20px;
-      max-width: 100%;
+      margin: 20px auto;
+      max-width: 50vw;
+      max-height: 50vh;
     }
   </style>
 </head>
 <body>
   <h2>تحويل أي صورة إلى JPG</h2>
-  <input type="file" accept="image/*" id="upload"><br>
-  <button onclick="downloadJPG()">تحميل الصورة كـ JPG</button><br>
+
+  <div id="drop-area">
+    <p>اختر صورة أو اسحبها هنا</p>
+    <input type="file" accept="image/*" id="upload">
+  </div>
+
+  <button onclick="downloadJPG()">تحميل الصورة كـ JPG</button>
   <canvas id="canvas"></canvas>
 
   <script>
     const upload = document.getElementById('upload');
+    const dropArea = document.getElementById('drop-area');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
 
     let jpgDataURL = '';
     let originalFileName = 'converted';
 
+    dropArea.addEventListener('click', () => {
+      upload.click();
+    });
+
+    // Drag events
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropArea.addEventListener(eventName, e => {
+        e.preventDefault();
+        dropArea.classList.add('hover');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, e => {
+        e.preventDefault();
+        dropArea.classList.remove('hover');
+      }, false);
+    });
+
+    dropArea.addEventListener('drop', e => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      handleFile(files[0]);
+    });
+
     upload.addEventListener('change', function () {
-      const file = this.files[0];
+      if (this.files.length > 0) {
+        handleFile(this.files[0]);
+      }
+    });
+
+    function handleFile(file) {
       if (!file || !file.type.startsWith('image/')) {
         alert("يرجى اختيار صورة صحيحة");
         return;
@@ -55,7 +108,7 @@
       };
       img.onerror = () => alert("حدث خطأ أثناء تحميل الصورة");
       img.src = URL.createObjectURL(file);
-    });
+    }
 
     function downloadJPG() {
       if (!jpgDataURL) return alert("يرجى رفع صورة أولاً");
